@@ -1,7 +1,20 @@
 const https = require("https");
+const request = require("request");
 
 // defining url for HERE api
 apiUrl = "https://tracking.api.here.com/traces/v2/daniel_ritter";
+
+// defining parameters to API call
+bTime = 0;
+aTime = 100000;
+token = "ABC";
+
+// optional values for GET request
+queryParameters = {
+	before: bTime,
+	after: aTime,
+	pageToken: token
+}
 
 
 /**
@@ -10,37 +23,33 @@ apiUrl = "https://tracking.api.here.com/traces/v2/daniel_ritter";
  * @param {*} callback - callback function when err
  */
 
-async function requestHereAPI(url) {
-    var httpRequest = new XMLHttpRequest();
-    
-    await httpRequest.onreadystatechange {
-        if (this.readyState == 4 && this.status == 200) {
-            var apiData = JSON.parse(this.responseText);
-            return apiData
-        }
-    };
+function requestHereAPI(url) {
 
-    httpRequest.open("GET", url, false);
-    httpRequest.send();
-    
+	// making GET call to the HERE api
+	request.get({
+		url: url,
+		qs: queryParameters
+	}, function(err, response, body) {
+		// if error arises in get request
+		if (err) {
+			console.log(err);
+			return;
+		}
 
+		// if successful get request
+		console.log("Get response: " + response.statusCode);
+		console.log(body);
+		if (response.statusCode == 200) {
+			return body;
+		} else {
+			console.log("Error in GET request, with status code " + response.statusCode);
+		}
 
+	});
 }
 
-const url =
-  "https://maps.googleapis.com/maps/api/geocode/json?address=Florence";
-https.get(url, res => {
-  res.setEncoding("utf8");
-  let body = "";
-  res.on("data", data => {
-    body += data;
-  });
-  res.on("end", () => {
-    body = JSON.parse(body);
-    console.log(
-      `City: ${body.results[0].formatted_address} -`,
-      `Latitude: ${body.results[0].geometry.location.lat} -`,
-      `Longitude: ${body.results[0].geometry.location.lng}`
-    );
-  });
-});
+x = requestHereAPI(apiUrl)
+
+x.then(function(result) {
+	console.log(result)
+})
