@@ -1,8 +1,10 @@
-const https = require("https");
 const request = require("request");
+const tracking_id = require("./tracking_id");
+
 
 // defining url for HERE api
-apiUrl = "https://tracking.api.here.com/traces/v2/daniel_ritter";
+apiUrl = "https://tracking.api.here.com/traces/v2/" + tracking_id.id;
+console.log(apiUrl)
 
 // defining parameters to API call
 bTime = 0;
@@ -16,7 +18,6 @@ queryParameters = {
 	pageToken: token
 }
 
-
 /**
  * Function to request JSON information from HERE's API
  * @param {*} url - the url of the API
@@ -28,7 +29,7 @@ function requestHereAPI(url) {
 	// making GET call to the HERE api
 	request.get({
 		url: url,
-		qs: queryParameters
+		// qs: queryParameters
 	}, function(err, response, body) {
 		// if error arises in get request
 		if (err) {
