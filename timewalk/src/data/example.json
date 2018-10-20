@@ -1,0 +1,14 @@
+{
+    "1": {
+        "locations": [
+            {
+                "timeStart": 1,
+                "timeEnd": 2,
+                "lat": 5,
+                "long": 5,
+                "placePhotograph": null,
+                "locationId": 2
+            }
+        ]
+    }
+}
