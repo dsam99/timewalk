@@ -1,5 +1,7 @@
 const request = require("request");
 const ids = require("./ids");
+const uuid = require('uuidv4');
+
 
 
 // defining url for HERE api
@@ -13,7 +15,7 @@ aTime = 100000;
 token = "ABC";
 
 // parameters to POST request for authorization
-authParameters = {	
+authParameters = {
 	realm: "IoT",
 	oauth_consumer_key: ids.device_id,
 	oauth_signature_method: "HMAC-SHA256",
@@ -27,6 +29,10 @@ queryParameters = {
 	before: bTime,
 	after: aTime,
 	pageToken: token
+}
+
+headers = {
+	Authorization: ids.bearer_token
 }
 
 /**
@@ -72,11 +78,19 @@ function authenticate(url, authParameters) {
 	request.post(
 		url,
 		authParameters,
-		function (error, response, body) {
-			console.log(body);
-			if (!error && response.statusCode == 200) {
+		function (err, response, body) {
+			if (err) {
+				console.log("Error");
+				console.log(err);
+			}
+
+			// if correct status code
+			if (response.statusCode == 200) {
 				console.log(body)
 			}
+
+			data = JSON.parse(body);
+			console.log(data.error);
 		}
 	);
 
@@ -91,10 +105,16 @@ function authenticate(url, authParameters) {
 
 function requestHereAPI(url) {
 
+	// generating uuid value
+	uid = uuid();
+	console.log(uid);
+
 	// making GET call to the HERE api
 	request.get({
+		headers: headers,
 		url: url,
-		// qs: queryParameters
+		method: 'GET'
+
 	}, function (err, response, body) {
 		// if error arises in get request
 		if (err) {
@@ -104,9 +124,10 @@ function requestHereAPI(url) {
 
 		// if successful get request
 		console.log("Get response: " + response.statusCode);
-		data = JSON.parse(body);
+		body_json = JSON.parse(body);
 		if (response.statusCode == 200) {
-			return data;
+			console.log(body_json.data);
+			return body_json.data;
 		} else {
 			console.log("Error in GET request, with status code " + response.statusCode);
 		}
@@ -115,8 +136,8 @@ function requestHereAPI(url) {
 }
 
 function main() {
-	getTimeStamp();
-	// requestHereAPI(apiUrl)
+	// getTimeStamp();
+	requestHereAPI(apiUrl)
 }
 
 main();
