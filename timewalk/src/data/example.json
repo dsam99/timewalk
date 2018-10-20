@@ -6,8 +6,21 @@
                 "timeEnd": 2,
                 "lat": 5,
                 "long": 5,
-                "placePhotograph": null,
-                "locationId": 2
+                "placePhotograph": "https://imgur.com/uQZj1ts.jpg",
+                "locationId": 2,
+                "name": "Brown University",
+                "address": "Providence, Rhode Island"
+            },
+
+            {
+                "timeStart": 1,
+                "timeEnd": 2,
+                "lat": 5,
+                "long": 5,
+                "placePhotograph": "https://imgur.com/uQZj1ts.jpg",
+                "locationId": 1,
+                "name": "Brown University",
+                "address": "Providence, Rhode Island"
             }
         ]
     }

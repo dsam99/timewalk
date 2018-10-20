@@ -1,27 +1,74 @@
 import React from 'react';
 import {
-  Image,
-  Platform,
-  ScrollView,
   StyleSheet,
-  Text,
-  TouchableOpacity,
   View,
+  Animated,
+  Text
 } from 'react-native';
-import { WebBrowser } from 'expo';
-
-import { MonoText } from '../../components/StyledText';
 import SideScroller from '../../components/SideScroller/SideScroller';
+import Colors from '../../constants/Colors';
 
 export default class HomeScreen extends React.Component {
-  static navigationOptions = {
+  state = {
     header: null,
+    fadeAnim: new Animated.Value(0),
+    loaded: false
   };
+
+  componentDidMount() {
+    Animated.timing(
+      this.state.fadeAnim,
+      {
+        toValue: 1,
+        duration: 1500,
+      }
+    ).start(() => {
+      Animated.timing(
+        this.state.fadeAnim,
+        {
+          toValue: 0,
+          duration: 500,
+        }
+      ).start(() => {
+        this.setState({
+          loaded: true
+        })
+      })
+    });
+  }
+
+  renderLoad() {
+    let { fadeAnim } = this.state;
+
+    return (
+      <Animated.View
+        style={{
+          opacity: fadeAnim,
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text style={styles.loadText} >
+          Welcome to TimeWalk
+        </Text>
+      </Animated.View>
+    );
+  }
+
+  renderMain() {
+    if (this.state.loaded) {
+      return <SideScroller />;
+    } else {
+      return this.renderLoad();
+    }
+  }
 
   render() {
     return (
       <View style={styles.container}>
-        <SideScroller />
+
+        {this.renderMain()}
       </View>
     );
   }
@@ -32,5 +79,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
+
+  loadText: {
+    fontSize: 40,
+    marginHorizontal: 50,
+    color: Colors.darkGray,
+    fontWeight: '700',
+    textAlign: 'center'
+  }
 });
