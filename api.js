@@ -1,22 +1,49 @@
 const request = require("request");
-const tracking_id = require("./tracking_id");
+const ids = require("./ids");
 
 
 // defining url for HERE api
-apiUrl = "https://tracking.api.here.com/traces/v2/" + tracking_id.id;
-console.log(apiUrl)
+authUrl = "https://tracking.api.here.com/users/v2/login"
+apiUrl = "https://tracking.api.here.com/traces/v2/" + ids.tracking_id;
 
 // defining parameters to API call
 bTime = 0;
 aTime = 100000;
 token = "ABC";
 
-// optional values for GET request
+// parameters to POST request for authorization
+authParameters = {
+  realm: "IoT",
+  oauth_consumer_key: device_id.id,
+  oauth_signature_method: "HMAC-SHA256",
+  oauth_timestamp: 10, //figure out this parameter?
+  oauth_nonce: "unique_string", //figure out this parameter?
+  oauth_version: 1.0
+}
+
+// parameters to GET request for authorization
 queryParameters = {
 	before: bTime,
 	after: aTime,
 	pageToken: token
 }
+
+
+/**
+ * Function to authenticate user to use HERE's API
+ * @param {*} url - the url of the authentication API
+ */
+
+function authenticate(url) {
+
+  // making POST call to authenticate
+  request.post({
+    url: url,
+
+  }) 
+
+}
+
 
 /**
  * Function to request JSON information from HERE's API
