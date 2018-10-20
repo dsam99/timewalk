@@ -2,6 +2,8 @@ const request = require('request')
 const ids = require('./ids')
 // const uuid = require('uuidv4')
 const fs = require('fs')
+const first_url_half = "https://reverse.geocoder.api.here.com/6.2/reversegeocode.json?prox=";
+const second_url_half = "%2C250&mode=retrieveAddresses&maxresults=1&gen=9&app_id=g6i9pjDYZXuZrPbHNCs5&app_code=iJNK1wm-kBqkO3rpPQ5H-w";
 
 // defining url for HERE api
 authUrl = 'https://tracking.api.here.com/users/v2/login'
@@ -165,7 +167,7 @@ function placesAPI (url, lat, lng) {
       // if correct status code
       if (response.statusCode == 200) {
         data = JSON.parse(body)
-        console.log(data.results.items)
+        cleanPlaceData(data);
 
       // if error is encountered
       } else {
@@ -175,10 +177,51 @@ function placesAPI (url, lat, lng) {
   )
 }
 
+/**
+ * Takes in the latitude and longitude of some location and returns the approximate address using HERE's geocoder API.
+ * @param {*} lat 
+ * @param {*} long 
+ */
+function getAddress(lat,long){
+    //Stores both coordinates as strings
+    var str_lat = String(lat)
+    var str_long = String(long);
+    //Requests address from API
+    request(
+        first_url_half+str_lat+"%2C"+str_long+second_url_half,
+        function(err,res,body){
+            if(err){
+                console.log("failed");
+                return err;
+            }
+            data = JSON.parse(body)
+            //Prints Address to console
+            cleanAddressData(data);
+        })
+}
+
+/**
+ * Takes in a json object of address data, and sets media and text fields to null and then 
+ * returns the address label. Label is the text address
+ * @param {*} data 
+ */
+function cleanAddressData(data){
+  data.Response.View[0].Result[0].Location.media = null;
+  data.Response.View[0].Result[0].Location.text = null; 
+  return data.Response.View[0].Result[0].Location.Address.Label;
+}
+
+function cleanPlaceData(data){
+  data.results.items.media = null;
+  data.results.items.text = null;
+  return data.results.items[0].title;
+}
+
 function main () {
   // getTimeStamp()
   // requestHereAPI(apiUrl)
-  placesAPI(placesUrl, 41.8268, -71.4025)
+  getAddress(41.8268,-71.4025);
+  placesAPI(placesUrl, 41.8268, -71.4025);
 }
 
 main()
