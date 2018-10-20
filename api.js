@@ -1,15 +1,14 @@
 const request = require("request");
 const ids = require("./ids");
-const uuid = require('uuidv4');
+// const uuid = require('uuidv4');
 const fs = require('fs');
-
-
 
 
 // defining url for HERE api
 authUrl = "https://tracking.api.here.com/users/v2/login"
 apiUrl = "https://tracking.api.here.com/traces/v2/" + ids.tracking_id;
 timeUrl = "https://tracking.api.here.com/v2/timestamp";
+placesUrl = "https://places.cit.api.here.com/places/v1/discover/here";
 
 // defining parameters to API call
 bTime = 0;
@@ -108,8 +107,8 @@ function authenticate(url, authParameters) {
 function requestHereAPI(url) {
 
 	// generating uuid value
-	uid = uuid();
-	console.log(uid);
+	// uid = uuid();
+	// console.log(uid);
 
 	// making GET call to the HERE api
 	request.get({
@@ -143,9 +142,39 @@ function requestHereAPI(url) {
 	});
 }
 
+function placesAPI(url, lat, lng) {
+	app_id = "g6i9pjDYZXuZrPbHNCs5";
+	app_code = "iJNK1wm-kBqkO3rpPQ5H-w";
+
+	request.get({
+		url,
+		app_id: app_id,
+		app_code: app_code,
+		at: lat.toString() + "," + lng.toString(),
+		method: 'GET'
+	},
+		function (err, response, body) {
+			if (err) {
+				console.log("Error");
+				console.log(err);
+			}
+
+			// if correct status code
+			if (response.statusCode == 200) {
+				console.log("BODY", body);
+			}
+
+			console.log(response.statusCode);
+
+			data = JSON.parse(body);
+			console.log("ERROR", data)
+		});
+}
+
 function main() {
 	// getTimeStamp();
-	requestHereAPI(apiUrl)
+	// requestHereAPI(apiUrl)
+	placesAPI(placesUrl, 42.3807121, -71.1252919)
 }
 
 main();
