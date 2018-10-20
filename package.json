@@ -6,7 +6,12 @@
     "react": "^16.5.2",
     "react-native": "^0.57.3",
     "react-native-cli": "^2.0.1",
+<<<<<<< HEAD
     "request": "^2.88.0",
     "uuidv4": "^2.0.0"
+=======
+    "react-native-swiper": "^1.5.13",
+    "request": "^2.88.0"
+>>>>>>> 057c120872d952e99837d923cd540ef3e09cc7f8
   }
 }

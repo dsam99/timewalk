@@ -1,6 +1,8 @@
 const request = require("request");
 const ids = require("./ids");
 const uuid = require('uuidv4');
+const fs = require('fs');
+
 
 
 
@@ -127,6 +129,12 @@ function requestHereAPI(url) {
 		body_json = JSON.parse(body);
 		if (response.statusCode == 200) {
 			console.log(body_json.data);
+
+			var json = JSON.stringify(body_json.data);
+			// writing JSON data to a file
+			// fs.writeFile('here_data.json', json, 'utf8', function(){
+			// 	console.log("Error in writing to file")
+			// });
 			return body_json.data;
 		} else {
 			console.log("Error in GET request, with status code " + response.statusCode);
