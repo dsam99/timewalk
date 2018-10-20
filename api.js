@@ -1,39 +1,38 @@
-const request = require("request");
-const ids = require("./ids");
-// const uuid = require('uuidv4');
-const fs = require('fs');
-
+const request = require('request')
+const ids = require('./ids')
+// const uuid = require('uuidv4')
+const fs = require('fs')
 
 // defining url for HERE api
-authUrl = "https://tracking.api.here.com/users/v2/login"
-apiUrl = "https://tracking.api.here.com/traces/v2/" + ids.tracking_id;
-timeUrl = "https://tracking.api.here.com/v2/timestamp";
-placesUrl = "https://places.cit.api.here.com/places/v1/discover/here";
+authUrl = 'https://tracking.api.here.com/users/v2/login'
+apiUrl = 'https://tracking.api.here.com/traces/v2/' + ids.tracking_id
+timeUrl = 'https://tracking.api.here.com/v2/timestamp'
+placesUrl = 'https://places.cit.api.here.com/places/v1/discover/here'
 
 // defining parameters to API call
-bTime = 0;
-aTime = 100000;
-token = "ABC";
+bTime = 0
+aTime = 100000
+token = 'ABC'
 
 // parameters to POST request for authorization
 authParameters = {
-	realm: "IoT",
-	oauth_consumer_key: ids.device_id,
-	oauth_signature_method: "HMAC-SHA256",
-	oauth_timestamp: 10, //figure out this parameter?
-	oauth_nonce: "unique_string", //figure out this parameter?
-	oauth_version: 1.0
+  realm: 'IoT',
+  oauth_consumer_key: ids.device_id,
+  oauth_signature_method: 'HMAC-SHA256',
+  oauth_timestamp: 10, // figure out this parameter?
+  oauth_nonce: 'unique_string', // figure out this parameter?
+  oauth_version: 1.0
 }
 
 // parameters to GET request for authorization
 queryParameters = {
-	before: bTime,
-	after: aTime,
-	pageToken: token
+  before: bTime,
+  after: aTime,
+  pageToken: token
 }
 
 headers = {
-	Authorization: ids.bearer_token
+  Authorization: ids.bearer_token
 }
 
 /**
@@ -41,33 +40,32 @@ headers = {
  * @param {*} url - the url to where to make the GET request
  */
 
-function getTimeStamp() {
-	//requesting timestamp
-	request.get({ url: timeUrl },
-		function (err, response, body) {
-			// error encountered in accessing timestamp
-			if (err) {
-				console.log(err);
-			}
+function getTimeStamp () {
+  // requesting timestamp
+  request.get({ url: timeUrl },
+    function (err, response, body) {
+      // error encountered in accessing timestamp
+      if (err) {
+        console.log(err)
+      }
 
-			// checking for correct status of document
-			if (response.statusCode == 200) {
-				// parsing response from request
-				data = JSON.parse(body);
-				timeStamp = data.timestamp;
+      // checking for correct status of document
+      if (response.statusCode == 200) {
+        // parsing response from request
+        data = JSON.parse(body)
+        timeStamp = data.timestamp
 
-				console.log("Timestamp is: " + timeStamp);
+        console.log('Timestamp is: ' + timeStamp)
 
-				// changing parameters to get request
-				authParameters.oauth_timestamp = timeStamp;
-				// console.log(authParameters)
-				authenticate(authUrl, authParameters);
-			}
-			else {
-				console.log("Error with status code " + response.statusCode);
-			}
-		}
-	)
+        // changing parameters to get request
+        authParameters.oauth_timestamp = timeStamp
+        // console.log(authParameters)
+        authenticate(authUrl, authParameters)
+      }else {
+        console.log('Error with status code ' + response.statusCode)
+      }
+    }
+  )
 }
 
 /**
@@ -75,28 +73,26 @@ function getTimeStamp() {
  * @param {*} url - the url of the authentication API
  */
 
-function authenticate(url, authParameters) {
-	request.post(
-		url,
-		authParameters,
-		function (err, response, body) {
-			if (err) {
-				console.log("Error");
-				console.log(err);
-			}
+function authenticate (url, authParameters) {
+  request.post(
+    url,
+    authParameters,
+    function (err, response, body) {
+      if (err) {
+        console.log('Error')
+        console.log(err)
+      }
 
-			// if correct status code
-			if (response.statusCode == 200) {
-				console.log(body)
-			}
+      // if correct status code
+      if (response.statusCode == 200) {
+        console.log(body)
+      }
 
-			data = JSON.parse(body);
-			console.log(data.error);
-		}
-	);
-
+      data = JSON.parse(body)
+      console.log(data.error)
+    }
+  )
 }
-
 
 /**
  * Function to request JSON information from HERE's API
@@ -104,79 +100,85 @@ function authenticate(url, authParameters) {
  * @param {*} callback - callback function when err
  */
 
-function requestHereAPI(url) {
+function requestHereAPI (url) {
 
-	// generating uuid value
-	// uid = uuid();
-	// console.log(uid);
+  // generating uuid value
+  // uid = uuid()
+  // console.log(uid)
 
-	// making GET call to the HERE api
-	request.get({
-		headers: headers,
-		url: url,
-		method: 'GET'
+  // making GET call to the HERE api
+  request.get({
+    headers: headers,
+    url: url,
+    method: 'GET'
 
-	}, function (err, response, body) {
-		// if error arises in get request
-		if (err) {
-			console.log(err);
-			return;
-		}
+  }, function (err, response, body) {
+    // if error arises in get request
+    if (err) {
+      console.log(err)
+      return
+    }
 
-		// if successful get request
-		console.log("Get response: " + response.statusCode);
-		body_json = JSON.parse(body);
-		if (response.statusCode == 200) {
-			console.log(body_json.data);
+    // if successful get request
+    console.log('Get response: ' + response.statusCode)
+    body_json = JSON.parse(body)
+    if (response.statusCode == 200) {
+      console.log(body_json.data)
 
-			var json = JSON.stringify(body_json.data);
-			// writing JSON data to a file
-			// fs.writeFile('here_data.json', json, 'utf8', function(){
-			// 	console.log("Error in writing to file")
-			// });
-			return body_json.data;
-		} else {
-			console.log("Error in GET request, with status code " + response.statusCode);
-		}
-
-	});
+      var json = JSON.stringify(body_json.data)
+      // writing JSON data to a file
+      // fs.writeFile('here_data.json', json, 'utf8', function(){
+      // 	console.log("Error in writing to file")
+      // })
+      return body_json.data
+    } else {
+      console.log('Error in GET request, with status code ' + response.statusCode)
+    }
+  })
 }
 
-function placesAPI(url, lat, lng) {
-	app_id = "g6i9pjDYZXuZrPbHNCs5";
-	app_code = "iJNK1wm-kBqkO3rpPQ5H-w";
+/**
+ * Function to get the place name using HERE's place api
+ * @param {*} url - the url of the API
+ * @param {*} lat - the latitude of the location
+ * @param {*} lng - the longitude of the location
+ */
+function placesAPI (url, lat, lng) {
 
-	request.get({
-		url,
-		app_id: app_id,
-		app_code: app_code,
-		at: lat.toString() + "," + lng.toString(),
-		method: 'GET'
-	},
-		function (err, response, body) {
-			if (err) {
-				console.log("Error");
-				console.log(err);
-			}
+  // information about app
+  app_id = 'g6i9pjDYZXuZrPbHNCs5'
+  app_code = 'iJNK1wm-kBqkO3rpPQ5H-w'
 
-			// if correct status code
-			if (response.statusCode == 200) {
-				console.log("BODY", body);
-			}
+  // making get request url
+  url = 'https://places.cit.api.here.com/places/v1/discover/here'
+  url += ('?app_id=' + app_id)
+  url += ('&app_code=' + app_code)
+  url += ('&at=' + lat.toString() + ',' + lng.toString())
 
-			console.log(response.statusCode);
+  request.get(url,
+    function (err, response, body) {
+      if (err) {
+        console.log('Error')
+        console.log(err)
+      }
 
-			data = JSON.parse(body);
-			console.log("ERROR", data)
-		});
+      // if correct status code
+      if (response.statusCode == 200) {
+        data = JSON.parse(body)
+        console.log(data.results.items)
+
+      // if error is encountered
+      } else {
+        console.log('ERROR', data)
+      }
+    }
+  )
 }
 
-function main() {
-	// getTimeStamp();
-	// requestHereAPI(apiUrl)
-	placesAPI(placesUrl, 42.3807121, -71.1252919)
+function main () {
+  // getTimeStamp()
+  // requestHereAPI(apiUrl)
+  placesAPI(placesUrl, 41.8268, -71.4025)
 }
 
-main();
-
-
+main()
