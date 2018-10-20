@@ -9,7 +9,7 @@ import customData from '../../data/example.json';
 
 export default class SideScroller extends React.Component {
     state = {
-        data: {}
+        data: null
     };
 
     renderItem(item) {
@@ -17,12 +17,12 @@ export default class SideScroller extends React.Component {
     }
 
     async componentWillMount() {
-        console.log(data);
+        // console.log(customData);
         this.setState({
             data: customData
+        }, () => {
+            // console.log(this.state.data);
         });
-
-        console.log(this.state);
     }
 
     render() {
@@ -31,8 +31,9 @@ export default class SideScroller extends React.Component {
                 <FlatList
                     style={styles.list}
                     horizontal={true}
-                    data={this.state.data.locations}
+                    data={this.state.data["1"].locations}
                     renderItem={item => this.renderItem(item)}
+                    keyExtractor={item => item.locationId}
                 >
 
                 </FlatList>

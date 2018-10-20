@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { WebBrowser } from 'expo';
 
-import { MonoText } from '../components/StyledText';
-import SideScroller from '../components/SideScroller/SideScroller';
+import { MonoText } from '../../components/StyledText';
+import SideScroller from '../../components/SideScroller/SideScroller';
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
