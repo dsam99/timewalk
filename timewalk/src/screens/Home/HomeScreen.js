@@ -20,7 +20,7 @@ export default class HomeScreen extends React.Component {
       this.state.fadeAnim,
       {
         toValue: 1,
-        duration: 1500,
+        duration: 2000,
       }
     ).start(() => {
       Animated.timing(
