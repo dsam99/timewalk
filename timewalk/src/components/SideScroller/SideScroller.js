@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import customData from '../../data/position_data_cleaned.json';
 
+import { Constants, ImagePicker, Permissions } from 'expo';
+
 import Swiper from 'react-native-swiper';
 import Colors from '../../constants/Colors';
 import Uploadbutton from '../Button/UploadButton';
@@ -24,7 +26,7 @@ export default class SideScroller extends React.Component {
         index: 0,
         fadeAnim: new Animated.Value(0),
         modalVisible: false,
-        height: 0
+        height: 0,
     };
 
     componentDidMount() {
@@ -65,8 +67,68 @@ export default class SideScroller extends React.Component {
         })
     }
 
+    _pickImage = async (index) => {
+        const {
+            status: cameraRollPerm
+        } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+
+        if (cameraRollPerm === 'granted') {
+            let pickerResult = await ImagePicker.launchImageLibraryAsync({
+                allowsEditing: true,
+                aspect: [4, 3],
+            });
+
+            this._handleImagePicked(pickerResult);
+        }
+    }
+
+    _takePhoto = async () => {
+        const {
+            status: cameraPerm
+        } = await Permissions.askAsync(Permissions.CAMERA);
+
+        const {
+            status: cameraRollPerm
+        } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+
+        // only if user allows permission to camera AND camera roll
+        if (cameraPerm === 'granted' && cameraRollPerm === 'granted') {
+            let pickerResult = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                aspect: [4, 3],
+            });
+
+            this._handleImagePicked(pickerResult);
+        }
+    };
+
+    _handleImagePicked = pickerResult => {
+        if (!pickerResult.cancelled) {
+            const { index } = this.state;
+            const array = [... this.state.data["1"].locations];
+            // console.log(array);
+            array[index].image = pickerResult.uri;
+            // console.log(pickerResult);
+
+            this.setState({
+                data: {
+                    ...this.state.data,
+                    "1": {
+                        ...this.state.data["1"],
+                        locations: array
+                    }
+                }
+            });
+        }
+    };
+
+
+    renderText(index) {
+        return this.state.data["1"].locations[index].text ? "View memory" : "Upload text";
+    }
+
     renderItem(item, index) {
-        photograph = item["placePhotograph"];
+        photograph = this.state.data["1"].locations[index].image || item.placePhotograph;
         date = this.formatAMPM(new Date(item.timestamp));
         console.log(date);
 
@@ -92,7 +154,7 @@ export default class SideScroller extends React.Component {
                 </Text>
 
                 <Uploadbutton
-                    text={'Upload text'}
+                    text={this.renderText(index)}
                     icon={'format-color-text'}
                     backgroundColor={Colors.white}
                     textColor={Colors.darkGray}
@@ -101,12 +163,13 @@ export default class SideScroller extends React.Component {
                 />
 
                 <Uploadbutton
-                    text={'Upload images'}
+                    text={"Upload image"}
                     icon={'camera'}
                     backgroundColor={Colors.white}
                     textColor={Colors.darkGray}
                     borderColor={Colors.black}
                     style={{ marginTop: 20 }}
+                    execute={() => this._pickImage(index)}
                 // execute={this.openModal}
                 />
             </View>
@@ -130,7 +193,7 @@ export default class SideScroller extends React.Component {
 
     closeModal = () => {
         this.setState({
-            modalVisible: false
+            modalVisible: false,
         });
     }
 
@@ -142,7 +205,7 @@ export default class SideScroller extends React.Component {
 
     render() {
         const { locations } = this.state.data["1"];
-        const { fadeAnim, index } = this.state;
+        const { fadeAnim, index, modalVisible } = this.state;
         // console.log(locations);
 
         return (
@@ -189,8 +252,8 @@ export default class SideScroller extends React.Component {
                         />
 
                         <Uploadbutton
-                            text={'Save'}
-                            icon={'save'}
+                            text={"Save"}
+                            icon={"save"}
                             backgroundColor={Colors.white}
                             textColor={Colors.darkGray}
                             borderColor={Colors.black}
@@ -248,8 +311,11 @@ const memories = StyleSheet.create({
         marginTop: 350,
         height: 400,
         width: '100%',
-        backgroundColor: Colors.white
-    }
+        backgroundColor: Colors.white,
+        borderRadius: 20,
+        borderColor: Colors.white,
+        overflow: 'hidden'
+    },
 })
 
 const location = StyleSheet.create({

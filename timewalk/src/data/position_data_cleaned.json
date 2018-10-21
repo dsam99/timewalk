@@ -9,7 +9,8 @@
                 "locationId": 1,
                 "name": "SOCH",
                 "address": "55 Garden St, Cambridge, MA",
-                "text": ""
+                "text": "",
+                "image": ""
             },
             {
                 "lat": 42.3736,
@@ -19,7 +20,8 @@
                 "locationId": 2,
                 "name": "Harvard Square",
                 "address": "Cambridge, MA",
-                "text": ""
+                "text": "",
+                "image": ""
             },
             {
                 "lat": 42.3519,
@@ -29,7 +31,8 @@
                 "locationId": 3,
                 "name": "South Street Landing",
                 "address": "Boston, MA",
-                "text": ""
+                "text": "",
+                "image": ""
             },
             {
                 "lat": 41.8292,
@@ -39,7 +42,8 @@
                 "locationId": 4,
                 "name": "Providence Train Station",
                 "address": "Providence, RI",
-                "text": ""
+                "text": "",
+                "image": ""
             },
             {
                 "lat": 41.8268,
@@ -49,7 +53,8 @@
                 "locationId": 5,
                 "name": "Faunce House",
                 "address": "75 Waterman St, Providence, RI",
-                "text": ""
+                "text": "",
+                "image": ""
             }
         ]
     }

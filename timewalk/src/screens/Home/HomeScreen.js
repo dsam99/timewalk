@@ -56,7 +56,7 @@ export default class HomeScreen extends React.Component {
         }}
       >
         <Text style={styles.loadText} >
-          Welcome to TimeWalk
+          TimeWalk
         </Text>
       </Animated.View>
     );
@@ -133,10 +133,11 @@ const styles = StyleSheet.create({
   },
 
   loadText: {
-    fontSize: 40,
+    fontSize: 80,
     marginHorizontal: 50,
     color: Colors.darkGray,
-    fontWeight: '700',
+    fontWeight: '900',
+    fontStyle: 'italic',
     textAlign: 'center',
     fontFamily: 'space-mono'
   }
