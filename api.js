@@ -5,6 +5,9 @@ const fs = require('fs')
 const first_url_half = "https://reverse.geocoder.api.here.com/6.2/reversegeocode.json?prox=";
 const second_url_half = "%2C250&mode=retrieveAddresses&maxresults=1&gen=9&app_id=g6i9pjDYZXuZrPbHNCs5&app_code=iJNK1wm-kBqkO3rpPQ5H-w";
 
+const clean = require('./clean');
+const async = require('async')
+
 // defining url for HERE api
 authUrl = 'https://tracking.api.here.com/users/v2/login'
 apiUrl = 'https://tracking.api.here.com/traces/v2/' + ids.tracking_id
@@ -18,23 +21,23 @@ token = 'ABC'
 
 // parameters to POST request for authorization
 authParameters = {
-  realm: 'IoT',
-  oauth_consumer_key: ids.device_id,
-  oauth_signature_method: 'HMAC-SHA256',
-  oauth_timestamp: 10, // figure out this parameter?
-  oauth_nonce: 'unique_string', // figure out this parameter?
-  oauth_version: 1.0
+	realm: 'IoT',
+	oauth_consumer_key: ids.device_id,
+	oauth_signature_method: 'HMAC-SHA256',
+	oauth_timestamp: 10, // figure out this parameter?
+	oauth_nonce: 'unique_string', // figure out this parameter?
+	oauth_version: 1.0
 }
 
 // parameters to GET request for authorization
 queryParameters = {
-  before: bTime,
-  after: aTime,
-  pageToken: token
+	before: bTime,
+	after: aTime,
+	pageToken: token
 }
 
 headers = {
-  Authorization: ids.bearer_token
+	Authorization: ids.bearer_token
 }
 
 /**
@@ -42,32 +45,32 @@ headers = {
  * @param {*} url - the url to where to make the GET request
  */
 
-function getTimeStamp () {
-  // requesting timestamp
-  request.get({ url: timeUrl },
-    function (err, response, body) {
-      // error encountered in accessing timestamp
-      if (err) {
-        console.log(err)
-      }
+function getTimeStamp() {
+	// requesting timestamp
+	request.get({ url: timeUrl },
+		function (err, response, body) {
+			// error encountered in accessing timestamp
+			if (err) {
+				console.log("STAMP ERR", err)
+			}
 
-      // checking for correct status of document
-      if (response.statusCode == 200) {
-        // parsing response from request
-        data = JSON.parse(body)
-        timeStamp = data.timestamp
+			// checking for correct status of document
+			if (response.statusCode == 200) {
+				// parsing response from request
+				data = JSON.parse(body)
+				timeStamp = data.timestamp
 
-        console.log('Timestamp is: ' + timeStamp)
+				console.log('Timestamp is: ' + timeStamp)
 
-        // changing parameters to get request
-        authParameters.oauth_timestamp = timeStamp
-        // console.log(authParameters)
-        authenticate(authUrl, authParameters)
-      }else {
-        console.log('Error with status code ' + response.statusCode)
-      }
-    }
-  )
+				// changing parameters to get request
+				authParameters.oauth_timestamp = timeStamp
+				// console.log(authParameters)
+				// authenticate(authUrl, authParameters)
+			} else {
+				console.log('Error with status code ' + response.statusCode)
+			}
+		}
+	)
 }
 
 /**
@@ -75,25 +78,28 @@ function getTimeStamp () {
  * @param {*} url - the url of the authentication API
  */
 
-function authenticate (url, authParameters) {
-  request.post(
-    url,
-    authParameters,
-    function (err, response, body) {
-      if (err) {
-        console.log('Error')
-        console.log(err)
-      }
+function authenticate(url, authParameters) {
+	request.post(
+		{
+			url,
+			body: JSON.stringify(authParameters)
+		},
+		function (err, response, body) {
+			if (err) {
+				console.log('Error')
+				console.log(err)
+			}
 
-      // if correct status code
-      if (response.statusCode == 200) {
-        console.log(body)
-      }
+			// if correct status code
+			if (response.statusCode == 200) {
+				console.log("AUTH BODY", body)
+			}
 
-      data = JSON.parse(body)
-      console.log(data.error)
-    }
-  )
+			data = JSON.parse(body)
+			console.log("AUTH", data)
+			console.log("AUTH DATA ERR", data.error)
+		}
+	)
 }
 
 /**
@@ -102,41 +108,41 @@ function authenticate (url, authParameters) {
  * @param {*} callback - callback function when err
  */
 
-function requestHereAPI (url) {
+function requestHereAPI(url, callback) {
 
-  // generating uuid value
-  // uid = uuid()
-  // console.log(uid)
+	// generating uuid value
+	// uid = uuid()
+	// console.log(uid)
 
-  // making GET call to the HERE api
-  request.get({
-    headers: headers,
-    url: url,
-    method: 'GET'
+	// making GET call to the HERE api
+	request.get({
+		headers: headers,
+		url: url,
+		method: 'GET'
 
-  }, function (err, response, body) {
-    // if error arises in get request
-    if (err) {
-      console.log(err)
-      return
-    }
+	}, function (err, response, body) {
+		// if error arises in get request
+		if (err) {
+			console.log(err)
+			return
+		}
 
-    // if successful get request
-    console.log('Get response: ' + response.statusCode)
-    body_json = JSON.parse(body)
-    if (response.statusCode == 200) {
-      console.log(body_json.data)
+		// if successful get request
+		console.log('Get response: ' + response.statusCode)
+		body_json = JSON.parse(body)
+		if (response.statusCode == 200) {
+			// console.log()
 
-      var json = JSON.stringify(body_json.data)
-      // writing JSON data to a file
-      // fs.writeFile('here_data.json', json, 'utf8', function(){
-      // 	console.log("Error in writing to file")
-      // })
-      return body_json.data
-    } else {
-      console.log('Error in GET request, with status code ' + response.statusCode)
-    }
-  })
+			// var json = JSON.stringify(body_json.data)
+			// writing JSON data to a file
+			// fs.writeFile('here_data.json', json, 'utf8', function(){
+			// 	console.log("Error in writing to file")
+			// })
+			callback(body_json.data);
+		} else {
+			console.log('Error in GET request, with status code ' + response.statusCode)
+		}
+	})
 }
 
 /**
@@ -145,36 +151,37 @@ function requestHereAPI (url) {
  * @param {*} lat - the latitude of the location
  * @param {*} lng - the longitude of the location
  */
-function placesAPI (url, lat, lng) {
+function placesAPI(lat, lng, callback) {
 
-  // information about app
-  app_id = 'g6i9pjDYZXuZrPbHNCs5'
-  app_code = 'iJNK1wm-kBqkO3rpPQ5H-w'
+	// information about app
+	app_id = 'g6i9pjDYZXuZrPbHNCs5'
+	app_code = 'iJNK1wm-kBqkO3rpPQ5H-w'
 
-  // making get request url
-  url = 'https://places.cit.api.here.com/places/v1/discover/here'
-  url += ('?app_id=' + app_id)
-  url += ('&app_code=' + app_code)
-  url += ('&at=' + lat.toString() + ',' + lng.toString())
+	// making get request url
+	url = 'https://places.cit.api.here.com/places/v1/discover/here'
+	url += ('?app_id=' + app_id)
+	url += ('&app_code=' + app_code)
+	url += ('&at=' + lat.toString() + ',' + lng.toString())
 
-  request.get(url,
-    function (err, response, body) {
-      if (err) {
-        console.log('Error')
-        console.log(err)
-      }
+	request.get(url,
+		function (err, response, body) {
+			if (err) {
+				console.log('Error')
+				console.log(err)
+			}
 
-      // if correct status code
-      if (response.statusCode == 200) {
-        data = JSON.parse(body)
-        cleanPlaceData(data);
+			// if correct status code
+			if (response.statusCode == 200) {
+				data = JSON.parse(body)
+				cleaned = cleanPlaceData(data);
+				callback(cleaned)
 
-      // if error is encountered
-      } else {
-        console.log('ERROR', data)
-      }
-    }
-  )
+				// if error is encountered
+			} else {
+				console.log('ERROR', data)
+			}
+		}
+	)
 }
 
 /**
@@ -182,22 +189,22 @@ function placesAPI (url, lat, lng) {
  * @param {*} lat 
  * @param {*} long 
  */
-function getAddress(lat,long){
-    //Stores both coordinates as strings
-    var str_lat = String(lat)
-    var str_long = String(long);
-    //Requests address from API
-    request(
-        first_url_half+str_lat+"%2C"+str_long+second_url_half,
-        function(err,res,body){
-            if(err){
-                console.log("failed");
-                return err;
-            }
-            data = JSON.parse(body)
-            //Prints Address to console
-            cleanAddressData(data);
-        })
+function getAddress(lat, long, callback) {
+	//Stores both coordinates as strings
+	var str_lat = String(lat)
+	var str_long = String(long);
+	//Requests address from API
+	request(
+		first_url_half + str_lat + "%2C" + str_long + second_url_half,
+		function (err, res, body) {
+			if (err) {
+				console.log("failed");
+				return err;
+			}
+			data = JSON.parse(body)
+			//Prints Address to console
+			callback(cleanAddressData(data));
+		})
 }
 
 /**
@@ -205,23 +212,51 @@ function getAddress(lat,long){
  * returns the address label. Label is the text address
  * @param {*} data 
  */
-function cleanAddressData(data){
-  data.Response.View[0].Result[0].Location.media = null;
-  data.Response.View[0].Result[0].Location.text = null; 
-  return data.Response.View[0].Result[0].Location.Address.Label;
+function cleanAddressData(data) {
+	// console.log(data.Response.View[0].Result)
+	return data.Response.View[0].Result[0].Location.Address.Label;
 }
 
-function cleanPlaceData(data){
-  data.results.items.media = null;
-  data.results.items.text = null;
-  return data.results.items[0].title;
+function cleanPlaceData(data) {
+	return data.results.items[0].title;
 }
 
-function main () {
-  // getTimeStamp()
-  // requestHereAPI(apiUrl)
-  getAddress(41.8268,-71.4025);
-  placesAPI(placesUrl, 41.8268, -71.4025);
+function main() {
+	// getTimeStamp()
+	// requestHereAPI(apiUrl)
+	getAddress(41.8268, -71.4025);
+	placesAPI(placesUrl, 41.8268, -71.4025);
 }
 
-main()
+final = (callback) => {
+	getTimeStamp()
+	requestHereAPI(apiUrl, (uncleaned) => {
+		cleaned = clean.clean_lat_longs(uncleaned)
+		// console.log(cleaned)
+		final = []
+
+		async.eachSeries(cleaned, (piece, next) => {
+			placesAPI(piece.lat, piece.long, (placed) => {
+				// console.log(placed);
+				// console.log(piece)
+
+				getAddress(piece.lat, piece.long, (address) => {
+					piece.address = address
+					piece.name = placed;
+					// console.log(piece)
+					final.push(piece)
+					// callback(piece)
+					next()
+				})
+			})
+		}, () => {
+			callback(final);
+		});
+	})
+}
+// console.log(uncleaned);
+
+// final = []
+final((cleaned) => {
+	console.log(cleaned)
+})

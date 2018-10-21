@@ -35,4 +35,4 @@ module.exports = {
   clean_lat_longs: clean_lat_longs
 }
 
-console.log(clean_lat_longs(data))
+// console.log(clean_lat_longs(data))

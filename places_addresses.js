@@ -24,4 +24,7 @@ function getAddress(lat,long){
             console.log(data.Response.View[0].Result[0].Location.Address.Label);
         })
 }
+
+
+
 getAddress(42.3519,-71.0551);

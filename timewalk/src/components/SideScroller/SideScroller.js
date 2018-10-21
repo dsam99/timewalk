@@ -6,12 +6,15 @@ import {
     Image,
     Dimensions,
     Text,
-    Animated
+    Animated,
+    TextInput,
+    Modal
 } from 'react-native';
-import customData from '../../data/example.json';
+import customData from '../../data/position_data_cleaned.json';
 
 import Swiper from 'react-native-swiper';
 import Colors from '../../constants/Colors';
+import Uploadbutton from '../Button/UploadButton';
 
 const { width } = Dimensions.get('window');
 
@@ -20,6 +23,8 @@ export default class SideScroller extends React.Component {
         data: null,
         index: 0,
         fadeAnim: new Animated.Value(0),
+        modalVisible: false,
+        height: 0
     };
 
     componentDidMount() {
@@ -32,9 +37,38 @@ export default class SideScroller extends React.Component {
         ).start();
     }
 
+    formatAMPM(date) {
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var ampm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        var strTime = hours + ':' + minutes + ' ' + ampm;
+        return strTime;
+    }
+
+    memoryUpdate = (text) => {
+        const { index } = this.state;
+        const array = [... this.state.data["1"].locations];
+        // console.log(array);
+        array[index].text = text;
+
+        this.setState({
+            data: {
+                ...this.state.data,
+                "1": {
+                    ...this.state.data["1"],
+                    locations: array
+                }
+            }
+        })
+    }
+
     renderItem(item, index) {
         photograph = item["placePhotograph"];
-        console.log(photograph);
+        date = this.formatAMPM(new Date(item.timestamp));
+        console.log(date);
 
         return (
             <View style={location.container} key={index}>
@@ -52,12 +86,29 @@ export default class SideScroller extends React.Component {
                 </Text>
 
                 <Text style={location.time}>
-                    {item.timeStart} - {item.timeEnd}
+                    {/* {date.getHours()} */}
+                    {/* {date.toLocaleTimeString()} */}
+                    {date}
                 </Text>
 
-                <Text style={[location.time, { marginTop: 10 }]}>
-                    Time elapsed: {item.timeEnd - item.timeStart} hours
-                </Text>
+                <Uploadbutton
+                    text={'Upload text'}
+                    icon={'format-color-text'}
+                    backgroundColor={Colors.white}
+                    textColor={Colors.darkGray}
+                    borderColor={Colors.black}
+                    execute={this.openModal}
+                />
+
+                <Uploadbutton
+                    text={'Upload images'}
+                    icon={'camera'}
+                    backgroundColor={Colors.white}
+                    textColor={Colors.darkGray}
+                    borderColor={Colors.black}
+                    style={{ marginTop: 20 }}
+                // execute={this.openModal}
+                />
             </View>
         );
     }
@@ -71,14 +122,31 @@ export default class SideScroller extends React.Component {
         });
     }
 
+    openModal = () => {
+        this.setState({
+            modalVisible: true
+        });
+    }
+
+    closeModal = () => {
+        this.setState({
+            modalVisible: false
+        });
+    }
+
+    _swiperIndexChange = (index) => {
+        this.setState({
+            index
+        })
+    }
+
     render() {
         const { locations } = this.state.data["1"];
-        const { fadeAnim } = this.state;
-        console.log(locations);
+        const { fadeAnim, index } = this.state;
+        // console.log(locations);
 
         return (
             <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-
                 <Swiper
                     containerStyle={styles.list}
                     // contentContainerStyle={styles.listContainer}
@@ -87,15 +155,49 @@ export default class SideScroller extends React.Component {
                     width={width}
                     loadMinimal={true}
                     scrollEnabled={true}
-                    // onIndexChanged={this._swiperIndexChange}
-                    // index={this.state.index}
+                    onIndexChanged={this._swiperIndexChange}
+                    index={this.state.index}
                     showsButtons={false}
+                    showsPagination={false}
                 >
                     {locations.map((item, index) => {
                         return this.renderItem(item, index);
                     })}
-
                 </Swiper>
+
+                <Modal
+                    visible={this.state.modalVisible}
+                    onRequestClose={() => { }}
+                    transparent={true}
+                    presentationStyle={"overFullScreen"}
+                    animationType={'fade'}
+                >
+                    <View style={memories.container}>
+                        <TextInput
+                            style={[memories.text, { height: Math.max(35, this.state.height) }]}
+                            autoCapitalize={'sentences'}
+                            autoCorrect={true}
+                            value={locations[index].text}
+                            onChangeText={this.memoryUpdate}
+                            maxLength={100}
+                            onContentSizeChange={(event) => {
+                                this.setState({ height: event.nativeEvent.contentSize.height })
+                            }}
+                            multiline={true}
+                            placeholder={'You have 180 characters, make the best use of it'}
+                            placeholderTextColor={Colors.lightGray}
+                        />
+
+                        <Uploadbutton
+                            text={'Save'}
+                            icon={'save'}
+                            backgroundColor={Colors.white}
+                            textColor={Colors.darkGray}
+                            borderColor={Colors.black}
+                            execute={this.closeModal}
+                        />
+                    </View>
+                </Modal>
             </Animated.View>
         );
     }
@@ -111,17 +213,44 @@ const styles = StyleSheet.create({
     listContainer: {
         // flex: 1,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        // paddingBottom: 20
     },
 
     container: {
-        flex: 1,
+        // flex: 1,
         // borderWidth: 2,
         width: '100%',
-        alignItems: 'center',
-        justifyContent: 'center'
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        height: '100%',
+        flexDirection: 'column'
     }
 });
+
+const memories = StyleSheet.create({
+    text: {
+        fontFamily: 'space-mono',
+        fontSize: 20,
+        fontWeight: '700',
+        color: Colors.mediumGray,
+        flex: 1,
+        height: 100,
+        width: '80%',
+        alignSelf: 'center'
+    },
+
+    container: {
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        // paddingBottom: 400,
+        flexDirection: 'column',
+        marginTop: 350,
+        height: 400,
+        width: '100%',
+        backgroundColor: Colors.white
+    }
+})
 
 const location = StyleSheet.create({
     container: {
@@ -130,10 +259,10 @@ const location = StyleSheet.create({
         // borderWidth: 1,
         // borderColor: 'blue'
         width: width,
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingBottom: 50,
-        paddingHorizontal: 50,
+        paddingHorizontal: '10%',
+        paddingTop: 20
     },
 
     pic: {
@@ -145,22 +274,28 @@ const location = StyleSheet.create({
 
     name: {
         // fontFamily: 'SpaceMono-Regular',
-        fontSize: 30,
+        fontSize: 40,
         marginTop: 20,
-        fontWeight: '700',
-        color: Colors.darkGray
+        fontWeight: '900',
+        color: Colors.darkGray,
+        width: '100%',
+        alignSelf: 'center',
+        textAlign: 'center',
+        fontFamily: 'space-mono'
     },
 
     time: {
-        // fontFamily: 'SpaceMono-Regular',
-        fontSize: 25,
-        marginTop: 60,
-        color: Colors.mediumGray
+        fontFamily: 'space-mono',
+        fontSize: 60,
+        fontWeight: 'bold',
+        marginTop: 20,
+        color: Colors.lightGray,
+        height: 100
     },
 
     address: {
         fontSize: 25,
-        marginTop: 10,
-        color: Colors.lightGray
+        color: Colors.lightGray,
+        fontStyle: 'italic'
     }
 })
